@@ -313,9 +313,53 @@ public class Util
     return sum;
   }
 
-  public static List<int[][]> solve(int[][] grid, EnumMap<Piece, Integer> pieces) {
+  public static List<Piece> getAllPieces(EnumMap<Piece, Integer> pieces) {
+    List<Piece> allPieces = new ArrayList<>();
+    for (Entry<Piece, Integer> piece : pieces.entrySet()) {
+      for (int number = 0; number < piece.getValue(); number++) {
+        allPieces.add(piece.getKey());
+      }
+    }
+    return allPieces;
+  }
+
+  public static Piece getRandomPiece(Random random, EnumMap<Piece, Integer> pieces) {
+    List<Piece> allPieces = getAllPieces(pieces);
+    return allPieces.get(random.nextInt(allPieces.size()));
+  }
+
+  public static List<int[][]> solveShot(Random random, int[][] grid, EnumMap<Piece, Integer> pieces) {
+    List<int[][]> solution = new ArrayList<>();
+    while (solution.isEmpty()) {
+      int[][] gridCopy = Util.copy(grid);
+      solution.add(Util.copy(gridCopy));
+      EnumMap<Piece, Integer> piecesCopy = pieces.clone();
+      while (sum(piecesCopy) != 0) {
+        // Select a random piece
+        Piece piece = getRandomPiece(random, piecesCopy);
+        piecesCopy.put(piece, piecesCopy.get(piece) - 1);
+        // Select a random move
+        List<Move> moves = getMoves(gridCopy, piece);
+        if (moves.isEmpty()) {
+          piecesCopy.put(piece, piecesCopy.get(piece) + 1);
+          solution = new ArrayList<>();
+          break;
+        }
+        Move move = moves.get(random.nextInt(moves.size()));
+        // Do the move
+        Util.insert(gridCopy, move.getShape(), move.getRow(), move.getColumn());
+        solution.add(Util.copy(gridCopy));
+      }
+      if (sum(piecesCopy) == 0) {
+        return solution;
+      }
+    }
+    return null;
+  }
+
+  public static List<int[][]> solveBrute(int[][] grid, EnumMap<Piece, Integer> pieces) {
     List<List<int[][]>> solutions = new ArrayList<>();
-    solve(solutions, grid, pieces);
+    solveBrute(solutions, grid, pieces);
     if (solutions.isEmpty()) {
       return null;
     }
@@ -325,7 +369,7 @@ public class Util
     return solutions.get(0);
   }
 
-  private static List<int[][]> solve(List<List<int[][]>> solutions, int[][] grid, EnumMap<Piece, Integer> pieces) {
+  private static List<int[][]> solveBrute(List<List<int[][]>> solutions, int[][] grid, EnumMap<Piece, Integer> pieces) {
     if (solutions.size() > 0) {
       return null;
     }
@@ -344,7 +388,7 @@ public class Util
       Util.insert(gridCopy, move.getShape(), move.getRow(), move.getColumn());
       piecesCopy.put(move.getPiece(), piecesCopy.get(move.getPiece()) - 1);
 
-      List<int[][]> solution = solve(solutions, gridCopy, piecesCopy);
+      List<int[][]> solution = solveBrute(solutions, gridCopy, piecesCopy);
       if (solution != null) {
         solution.add(grid);
         return solution;

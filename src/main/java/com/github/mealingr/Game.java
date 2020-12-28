@@ -49,11 +49,14 @@ public class Game
     pieces.put(Piece.PEG, 0);
   }
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws Exception {
     Game game = new Game();
-    List<int[][]> solution = Util.solve(game.grid.getGrid(), game.pieces);
+    List<int[][]> solution = Util.solveShot(game.random, game.grid.getGrid(), game.pieces);
+    Gui gui = new Gui(400, 400, game.grid.getGrid());
     if (solution != null) {
       for (int[][] grid : solution) {
+        Thread.sleep(2000);
+        gui.setGrid(grid);
         System.out.println(Util.toString(grid));
         System.out.println();
       }
