@@ -3,6 +3,7 @@ package com.github.mealingr;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map.Entry;
@@ -380,7 +381,7 @@ public class Util
       return solution;
     }
     List<Move> moves = getMoves(grid, pieces);
-    Collections.shuffle(moves);
+    moves.sort(Comparator.comparingInt(m -> -Util.size(m.getShape())));
     for (Move move : moves) {
       int[][] gridCopy = Util.copy(grid);
       EnumMap<Piece, Integer> piecesCopy = pieces.clone();

@@ -1,15 +1,22 @@
 package com.github.mealingr;
 
 import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.*;
 
 public class Gui
-    extends Canvas
+    extends JPanel
 {
   private static final Map<Integer, Piece> PIECE_BY_NUMBER = new HashMap<>();
 
@@ -19,22 +26,149 @@ public class Gui
     }
   }
 
+  private int width;
+
+  private int height;
+
+  private int[][] originalGrid;
+
+  private EnumMap<Piece, Integer> originalPieces;
+
   private int[][] grid;
 
-  public Gui(int width, int height, int[][] grid) {
-    this.grid = grid;
+  private EnumMap<Piece, Integer> pieces;
+
+  private final AtomicBoolean isSolving = new AtomicBoolean();
+
+  public Gui(int width, int height, int[][] grid, EnumMap<Piece, Integer> pieces) {
+    this.width = width;
+    this.height = height;
+    this.originalGrid = Util.copy(grid);
+    this.originalPieces = pieces.clone();
+    this.grid = Util.copy(grid);
+    this.pieces = pieces.clone();
+    initialize();
+  }
+
+  private void initialize() {
+    setPreferredSize(new Dimension(width, height));
+    addMouseListener(new MouseListener()
+    {
+      @Override
+      public void mouseClicked(MouseEvent e) {
+        new Thread(() -> {
+          if (isSolving.get()) {
+            return;
+          }
+          int[] position = getPosition(e.getX(), e.getY());
+          if (grid[position[0]][position[1]] == Piece.PEG.getNumber()) {
+            grid[position[0]][position[1]] = Grid.EMPTY;
+            pieces.put(Piece.PEG, pieces.get(Piece.PEG) + 1);
+            repaint();
+          }
+          else if (grid[position[0]][position[1]] == Grid.EMPTY) {
+            if (pieces.get(Piece.PEG) > 0) {
+              grid[position[0]][position[1]] = Piece.PEG.getNumber();
+              pieces.put(Piece.PEG, pieces.get(Piece.PEG) - 1);
+              repaint();
+            }
+          }
+        }).start();
+      }
+
+      @Override
+      public void mousePressed(MouseEvent e) {
+
+      }
+
+      @Override
+      public void mouseReleased(MouseEvent e) {
+
+      }
+
+      @Override
+      public void mouseEntered(MouseEvent e) {
+
+      }
+
+      @Override
+      public void mouseExited(MouseEvent e) {
+
+      }
+    });
     JFrame frame = new JFrame("Genius Square");
+    frame.addKeyListener(new KeyListener()
+    {
+      @Override
+      public void keyTyped(KeyEvent e) {
+
+      }
+
+      @Override
+      public void keyPressed(KeyEvent e) {
+        new Thread(() -> {
+          if (isSolving.get()) {
+            return;
+          }
+          if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+            isSolving.set(true);
+            repaint();
+            EnumMap<Piece, Integer> piecesCopy = pieces.clone();
+            piecesCopy.put(Piece.PEG, 0);
+            java.util.List<int[][]> solution;
+            if (e.isAltDown()) {
+              solution = Util.solveBrute(grid, piecesCopy);
+            }
+            else {
+              solution = Util.solveShot(new Random(), grid, piecesCopy);
+            }
+            if (solution != null) {
+              for (int[][] grid : solution) {
+                try {
+                  Thread.sleep(200);
+                }
+                catch (InterruptedException ignored) {
+                }
+                setGrid(grid);
+              }
+            }
+            isSolving.set(false);
+          }
+          else if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+            setGrid(Util.copy(originalGrid));
+            setPieces(originalPieces.clone());
+          }
+        }).start();
+      }
+
+      @Override
+      public void keyReleased(KeyEvent e) {
+      }
+    });
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    setSize(width, height);
-    setBackground(Color.BLACK);
     frame.add(this);
     frame.pack();
     frame.setVisible(true);
   }
 
+  private int[] getPosition(int x, int y) {
+    int height = getHeight();
+    int width = getWidth();
+    int rowHeight = height / (grid.length + 1);
+    int maxColumnLength = maxColumnLength();
+    int columnWidth = width / (maxColumnLength + 1);
+    int row = y / rowHeight;
+    int column = x / columnWidth;
+    return new int[]{row - 1, column - 1};
+  }
+
   public void setGrid(int[][] grid) {
     this.grid = grid;
     repaint();
+  }
+
+  public void setPieces(EnumMap<Piece, Integer> pieces) {
+    this.pieces = pieces;
   }
 
   private int maxColumnLength() {
@@ -78,7 +212,8 @@ public class Gui
     g.setFont(new Font("Arial", Font.PLAIN, fontSize - 1));
   }
 
-  public void paint(Graphics g) {
+  @Override
+  public void paintComponent(Graphics g) {
     int height = getHeight();
     int width = getWidth();
     int rowHeight = height / (grid.length + 1);
@@ -86,6 +221,16 @@ public class Gui
     int columnWidth = width / (maxColumnLength + 1);
 
     setIdealFontSize(g, columnWidth, rowHeight);
+
+    // Draw the background
+    g.setColor(Color.BLACK);
+    g.fillRect(0, 0, width, height);
+
+    // Draw a green circle if it's solving
+    if (isSolving.get()) {
+      g.setColor(Color.GREEN);
+      g.fillOval(0, 0, columnWidth, rowHeight);
+    }
     // Draw 1 to max column length
     g.setColor(Color.WHITE);
     for (int column = 1; column < maxColumnLength + 1; column++) {
@@ -126,17 +271,5 @@ public class Gui
         g.drawLine(column * columnWidth, 0, column * columnWidth, height);
       }
     }
-  }
-
-  public static void main(String[] args) {
-    int[][] grid = new int[][]{
-        {1, 1, 3, 3, 1, 10},
-        {5, 6, 3, 3, 10, 10},
-        {5, 6, 9, 1, 1, 10},
-        {5, 6, 9, 9, 1, 7},
-        {1, 6, 8, 9, 7, 7},
-        {4, 4, 8, 8, 8, 2}
-    };
-    new Gui(400, 400, grid);
   }
 }

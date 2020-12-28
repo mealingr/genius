@@ -1,7 +1,6 @@
 package com.github.mealingr;
 
 import java.util.EnumMap;
-import java.util.List;
 import java.util.Random;
 
 public class Game
@@ -58,16 +57,6 @@ public class Game
   }
 
   public static void main(String[] args) throws Exception {
-    Game game = new Game("a1,a2,a3,a4,a5,a6,b1");
-    Gui gui = new Gui(400, 400, game.grid.getGrid());
-    List<int[][]> solution = Util.solveShot(game.random, game.grid.getGrid(), game.pieces);
-    if (solution != null) {
-      for (int[][] grid : solution) {
-        Thread.sleep(2000);
-        gui.setGrid(grid);
-        System.out.println(Util.toString(grid));
-        System.out.println();
-      }
-    }
+    new Gui(400, 400, new Grid().getGrid(), DEFAULT_PIECES.clone());
   }
 }
