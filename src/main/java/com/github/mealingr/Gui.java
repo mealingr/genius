@@ -118,10 +118,11 @@ public class Gui
       }
     }
     // Draw lines
+    ((Graphics2D)g).setStroke(new BasicStroke(2));
     g.setColor(Color.BLACK);
-    for (int row = 0; row < grid.length; row++) {
+    for (int row = 0; row < grid.length + 1; row++) {
       g.drawLine(0, row * rowHeight, width, row * rowHeight);
-      for (int column = 0; column < grid[row].length; column++) {
+      for (int column = 0; column < maxColumnLength + 1; column++) {
         g.drawLine(column * columnWidth, 0, column * columnWidth, height);
       }
     }
