@@ -400,4 +400,27 @@ public class Util
     }
     return null;
   }
+
+  public static String normalise(String string) {
+    return string.toUpperCase().trim();
+  }
+
+  public static String[] normalise(String[] strings) {
+    String[] normalised = new String[strings.length];
+    for (int i = 0; i < strings.length; i++) {
+      normalised[i] = normalise(strings[i]);
+    }
+    return normalised;
+  }
+
+  public static int[] stringPositionsToPositions(String[] stringPositions) {
+    List<Integer> positions = new ArrayList<>();
+    for (String position : stringPositions) {
+      int row = position.charAt(0) - 'A';
+      int column = Character.getNumericValue(position.charAt(1)) - 1;
+      positions.add(row);
+      positions.add(column);
+    }
+    return convertTo1DArray(positions);
+  }
 }

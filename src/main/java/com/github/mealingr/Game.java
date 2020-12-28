@@ -29,6 +29,14 @@ public class Game
     initialize(positions);
   }
 
+  public Game(String... positions) {
+    initialize(Util.stringPositionsToPositions(Util.normalise(positions)));
+  }
+
+  public Game(String positions) {
+    initialize(Util.stringPositionsToPositions(Util.normalise(positions.split(","))));
+  }
+
   private void initialize(int[] positions) {
     random = new Random();
     grid = new Grid();
@@ -50,9 +58,9 @@ public class Game
   }
 
   public static void main(String[] args) throws Exception {
-    Game game = new Game();
-    List<int[][]> solution = Util.solveShot(game.random, game.grid.getGrid(), game.pieces);
+    Game game = new Game("a1,a2,a3,a4,a5,a6,b1");
     Gui gui = new Gui(400, 400, game.grid.getGrid());
+    List<int[][]> solution = Util.solveShot(game.random, game.grid.getGrid(), game.pieces);
     if (solution != null) {
       for (int[][] grid : solution) {
         Thread.sleep(2000);
