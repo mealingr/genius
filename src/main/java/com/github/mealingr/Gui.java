@@ -40,6 +40,8 @@ public class Gui
 
   private final AtomicBoolean isSolving = new AtomicBoolean();
 
+  private final AtomicBoolean continueSolving = new AtomicBoolean();
+
   public Gui(int width, int height, int[][] grid, EnumMap<Piece, Integer> pieces) {
     this.width = width;
     this.height = height;
@@ -108,21 +110,28 @@ public class Gui
       public void keyPressed(KeyEvent e) {
         new Thread(() -> {
           if (isSolving.get()) {
+            if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+              continueSolving.set(false);
+            }
             return;
           }
           if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+            continueSolving.set(true);
             isSolving.set(true);
             repaint();
-            EnumMap<Piece, Integer> piecesCopy = pieces.clone();
-            piecesCopy.put(Piece.PEG, 0);
             java.util.List<int[][]> solution;
-            if (e.isAltDown()) {
-              solution = Util.solveBrute(grid, piecesCopy);
+            if (e.isShiftDown()) {
+              solution = Util.solveBrute(grid, pieces, continueSolving);
             }
             else {
-              solution = Util.solveShot(new Random(), grid, piecesCopy);
+              solution = Util.solveShot(new Random(), grid, pieces, continueSolving);
             }
             if (solution != null) {
+              for (Piece piece : pieces.keySet()) {
+                if (piece != Piece.PEG) {
+                  pieces.put(piece, 0);
+                }
+              }
               for (int[][] grid : solution) {
                 try {
                   Thread.sleep(200);
@@ -133,10 +142,19 @@ public class Gui
               }
             }
             isSolving.set(false);
+            repaint();
           }
           else if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-            setGrid(Util.copy(originalGrid));
-            setPieces(originalPieces.clone());
+            if (e.isShiftDown()) {
+              setGrid(Util.copyJustPegs(grid));
+              EnumMap<Piece, Integer> clone = originalPieces.clone();
+              clone.put(Piece.PEG, pieces.get(Piece.PEG));
+              setPieces(clone);
+            }
+            else {
+              setGrid(Util.copy(originalGrid));
+              setPieces(originalPieces.clone());
+            }
           }
         }).start();
       }

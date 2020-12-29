@@ -8,6 +8,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 public class Util
@@ -329,9 +330,16 @@ public class Util
     return allPieces.get(random.nextInt(allPieces.size()));
   }
 
-  public static List<int[][]> solveShot(Random random, int[][] grid, EnumMap<Piece, Integer> pieces) {
+  public static List<int[][]> solveShot(
+      Random random,
+      int[][] grid,
+      EnumMap<Piece, Integer> pieces,
+      AtomicBoolean shouldContinue)
+  {
+    pieces = pieces.clone();
+    pieces.put(Piece.PEG, 0);
     List<int[][]> solution = new ArrayList<>();
-    while (solution.isEmpty()) {
+    while (solution.isEmpty() && shouldContinue.get()) {
       int[][] gridCopy = Util.copy(grid);
       solution.add(Util.copy(gridCopy));
       EnumMap<Piece, Integer> piecesCopy = pieces.clone();
@@ -358,9 +366,11 @@ public class Util
     return null;
   }
 
-  public static List<int[][]> solveBrute(int[][] grid, EnumMap<Piece, Integer> pieces) {
+  public static List<int[][]> solveBrute(int[][] grid, EnumMap<Piece, Integer> pieces, AtomicBoolean shouldContinue) {
+    pieces = pieces.clone();
+    pieces.put(Piece.PEG, 0);
     List<List<int[][]>> solutions = new ArrayList<>();
-    solveBrute(solutions, grid, pieces);
+    solveBrute(solutions, grid, pieces, shouldContinue);
     if (solutions.isEmpty()) {
       return null;
     }
@@ -370,8 +380,13 @@ public class Util
     return solutions.get(0);
   }
 
-  private static List<int[][]> solveBrute(List<List<int[][]>> solutions, int[][] grid, EnumMap<Piece, Integer> pieces) {
-    if (solutions.size() > 0) {
+  private static List<int[][]> solveBrute(
+      List<List<int[][]>> solutions,
+      int[][] grid,
+      EnumMap<Piece, Integer> pieces,
+      AtomicBoolean shouldContinue)
+  {
+    if (solutions.size() > 0 || !shouldContinue.get()) {
       return null;
     }
     if (sum(pieces) == 0) {
@@ -389,13 +404,13 @@ public class Util
       Util.insert(gridCopy, move.getShape(), move.getRow(), move.getColumn());
       piecesCopy.put(move.getPiece(), piecesCopy.get(move.getPiece()) - 1);
 
-      List<int[][]> solution = solveBrute(solutions, gridCopy, piecesCopy);
+      List<int[][]> solution = solveBrute(solutions, gridCopy, piecesCopy, shouldContinue);
       if (solution != null) {
         solution.add(grid);
         return solution;
       }
 
-      if (solutions.size() > 0) {
+      if (solutions.size() > 0 || !shouldContinue.get()) {
         return null;
       }
     }
@@ -423,5 +438,18 @@ public class Util
       positions.add(column);
     }
     return convertTo1DArray(positions);
+  }
+
+  public static int[][] copyJustPegs(int[][] grid) {
+    int[][] copyJustPegs = new int[grid.length][];
+    for (int row = 0; row < grid.length; row++) {
+      copyJustPegs[row] = new int[grid[row].length];
+      for (int column = 0; column < grid[row].length; column++) {
+        if (grid[row][column] == Piece.PEG.getNumber()) {
+          copyJustPegs[row][column] = grid[row][column];
+        }
+      }
+    }
+    return copyJustPegs;
   }
 }
