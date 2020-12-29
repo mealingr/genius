@@ -52,3 +52,6 @@ py cheerpjfy.py .\genius-1.0-SNAPSHOT.jar
 ```
 The corresponding `index.html` is used to host this JavaScript version of the game, and is based on
 [this example](https://github.com/leaningtech/cheerpj-meta/wiki/Getting-Started).
+
+Note that since `genius-1.0-SNAPSHOT.jar.js` is the output of CheerpJ, then it falls under its
+[Non-commercial license](https://www.leaningtech.com/pages/cheerpj_noncommercial_licence.html).
