@@ -39,6 +39,13 @@ To flip the selected piece vertically, press `f`.
 To place a piece, left click on the grid where you want the piece to be placed. If the placement is valid, then the
 piece will be put there.
 
+To pickup a piece, first select the piece type (using numbers `1-9` or `0` for a peg) and then click on an existing
+piece of that type.
+
+To clear the screen, press `Space`.
+
+To clear the screen except for pegs, press `Shift + Space`
+
 ## Automatically Solving ##
 
 At any point you can press `Enter` to have the computer automatically try to place the remaining pieces
