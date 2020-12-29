@@ -49,6 +49,20 @@ public class Util
     }
   }
 
+  public static void replace(int[] row, int value, int replacement) {
+    for (int column = 0; column < row.length; column++) {
+      if (row[column] == value) {
+        row[column] = replacement;
+      }
+    }
+  }
+
+  public static void replace(int[][] grid, int value, int replacement) {
+    for (int row = 0; row < grid.length; row++) {
+      replace(grid[row], value, replacement);
+    }
+  }
+
   public static int[] reverse(int[] row) {
     int[] reverse = new int[row.length];
     for (int column = 0; column < row.length; column++) {
@@ -124,7 +138,8 @@ public class Util
     return true;
   }
 
-  public static void insert(int[][] grid, int[][] shape, int row, int column) {
+  public static List<Integer> insert(int[][] grid, int[][] shape, int row, int column) {
+    List<Integer> positions = new ArrayList<>();
     for (int shapeRow = 0; shapeRow < shape.length; shapeRow++) {
       int targetRow = row + shapeRow;
       for (int shapeColumn = 0; shapeColumn < shape[shapeRow].length; shapeColumn++) {
@@ -133,6 +148,66 @@ public class Util
           continue;
         }
         grid[targetRow][targetColumn] = shape[shapeRow][shapeColumn];
+        positions.add(targetRow);
+        positions.add(targetColumn);
+      }
+    }
+    return positions;
+  }
+
+  public static void clear(int[][] grid, List<Integer> positions) {
+    for (int i = 0; i < positions.size(); i += 2) {
+      grid[positions.get(i)][positions.get(i + 1)] = Grid.EMPTY;
+    }
+  }
+
+  public static int[][] getShape(int[][] gridBefore, int[][] gridAfter) {
+    List<List<Integer>> shape = new ArrayList<>();
+    for (int row = 0; row < gridAfter.length; row++) {
+      shape.add(new ArrayList<>());
+      for (int column = 0; column < gridAfter[row].length; column++) {
+        shape.get(row).add(gridAfter[row][column] - gridBefore[row][column]);
+      }
+    }
+    trim(shape);
+    return convertTo2DArray(shape);
+  }
+
+  public static int sumRow(List<List<Integer>> grid, int row) {
+    int sum = 0;
+    for (Integer i : grid.get(row)) {
+      sum += i;
+    }
+    return sum;
+  }
+
+  public static int sumColumn(List<List<Integer>> grid, int column) {
+    int sum = 0;
+    for (List<Integer> row : grid) {
+      sum += row.get(column);
+    }
+    return sum;
+  }
+
+  public static void removeRow(List<List<Integer>> grid, int row) {
+    grid.remove(row);
+  }
+
+  public static void removeColumn(List<List<Integer>> grid, int column) {
+    for (List<Integer> row : grid) {
+      row.remove(column);
+    }
+  }
+
+  public static void trim(List<List<Integer>> grid) {
+    for (int row = grid.size() - 1; row >= 0; row--) {
+      if (sumRow(grid, row) == 0) {
+        removeRow(grid, row);
+      }
+    }
+    for (int column = grid.get(0).size() - 1; column >= 0; column--) {
+      if (sumColumn(grid, column) == 0) {
+        removeColumn(grid, column);
       }
     }
   }
