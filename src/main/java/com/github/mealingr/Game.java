@@ -56,7 +56,7 @@ public class Game
     pieces.put(Piece.PEG, 0);
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(String[] args) {
     new Gui(400, 400, new Grid().getGrid(), DEFAULT_PIECES.clone());
   }
 }
