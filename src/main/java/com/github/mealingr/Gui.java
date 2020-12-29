@@ -56,6 +56,8 @@ public class Gui
 
   private boolean mouseInside;
 
+  private Random random;
+
   public Gui(int width, int height, int[][] grid, EnumMap<Piece, Integer> pieces) {
     this.width = width;
     this.height = height;
@@ -63,6 +65,7 @@ public class Gui
     this.originalPieces = pieces.clone();
     this.grid = Util.copy(grid);
     this.pieces = pieces.clone();
+    this.random = new Random();
     initialize();
   }
 
@@ -228,6 +231,18 @@ public class Gui
           }
           else if (e.getKeyCode() == KeyEvent.VK_Q) {
             previousPiece();
+            repaint();
+          }
+          else if (e.getKeyCode() == KeyEvent.VK_P) {
+            if (isSolving.get()) {
+              return;
+            }
+            int[] positions = Util.convertTo1DArray(Util.getRandomPositions(random, grid, pieces.get(Piece.PEG)));
+            pieces.put(Piece.PEG, positions.length / 2);
+            for (int i = 0; i < positions.length; i += 2) {
+              Util.insert(grid, Piece.PEG.getShapes()[0], positions[i], positions[i + 1]);
+            }
+            pieces.put(Piece.PEG, 0);
             repaint();
           }
         }).start();

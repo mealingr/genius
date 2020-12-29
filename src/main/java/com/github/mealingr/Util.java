@@ -240,8 +240,14 @@ public class Util
 
   public static List<Integer> getAllFlatPositions(int[][] grid) {
     List<Integer> allFlatPositions = new ArrayList<>();
-    for (int flatPosition = 0; flatPosition < size(grid); flatPosition++) {
-      allFlatPositions.add(flatPosition);
+    int flatPosition = 0;
+    for (int row = 0; row < grid.length; row++) {
+      for (int column = 0; column < grid[row].length; column++) {
+        if (grid[row][column] == Grid.EMPTY) {
+          allFlatPositions.add(flatPosition);
+        }
+        flatPosition++;
+      }
     }
     return allFlatPositions;
   }

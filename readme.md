@@ -25,6 +25,8 @@ where `genius-1.0-SNAPSHOT.jar` is produced in the `target` directory after a su
 
 Before playing, select the peg piece using number `0`, and add 7 pegs to the board.
 
+To randomly place pegs, press `p`.
+
 The goal of the game is to place all of your pieces onto the board after the pegs have been placed.
 
 To select a piece, use the numbers `1-9`. You can also cycle through pieces using either `q` (backward) and `e`
